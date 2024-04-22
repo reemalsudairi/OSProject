@@ -8,25 +8,30 @@ public class MLQ {
     static Scanner input = new Scanner(System.in);
     static LinkedList<PCB> Q1 = new LinkedList<PCB>();
     static LinkedList<PCB> Q2 = new LinkedList<PCB>();
-    static LinkedList<PCB> temp = new LinkedList<PCB>();
+    static LinkedList<PCB> MLQ = new LinkedList<PCB>();
+     static LinkedList<PCB> temp = new LinkedList<PCB>(); //منب متأكدة وشو هذا 
     double averageTAT,averageWT,averageRT;
     
     public static void main(String[] args){
-        while (true) {
-            System.out.println("1. Enter process' information.");
+        Boolean x=true;
+        System.out.println("Welcome to our program !");
+        while (x) {
+        
+              System.out.println("1. Enter process' information.");
             System.out.println("2. Report detailed information about each process and different scheduling criteria.");
             System.out.println("3. Exit the program.");
-            System.out.print("Enter your choice: ");
+            System.out.print("please Enter your choice: ");
 
-            int choice = input.nextInt();
+            String choice = input.nextLine();
             switch (choice) {
-                case 1:
-                    MLQ.addProcess();
+                case "1":
+                    temp.addProcess();//هنا وش قصدك MLQ   
                     break;
-                case 2:
+                case "2":
 
                 break;
-                case 3:
+                case "3":
+                    System.out.println("Good bye !");
                     System.exit(0);
                     break;
                 default:
@@ -86,9 +91,12 @@ public class MLQ {
     // Sort Q1 and Q2 based on arrival time
     Q1.sort(Comparator.comparingInt(PCB::getArrivalTime));
     Q2.sort(Comparator.comparingInt(PCB::getArrivalTime));
+    }
+   
 
-    int currentTime = 0; // Initialize current time
 
+public void SJF(){
+     int currentTime = 0; // Initialize current time
     // SJF scheduling for Q2
     while (!Q2.isEmpty()) {
         PCB shortestJob = findShortestJob(Q2);
@@ -137,6 +145,27 @@ private PCB findShortestJob(LinkedList<PCB> queue) {
 }
 
 
+public void  orderMLQ(){
+ // MLQ arraylist already created 
+PCB temp ;
+while (!Q1.isEmpty() ) {
+    temp = Q1.remove(0);  
+    int tempBurst = temp.getCPU_burst();
+if(tempBurst>3){//check if this processes needs to enter the queue again
+Q1.add(temp); }
+tempBurst= tempBurst-3 ; //3 Quantm
+temp.setCPU_burst(tempBurst);
+MLQ.add(temp);
+}
+while (!Q2.isEmpty() ){
+temp=Q2.remove(0);
+MLQ.add(temp);
+}
+if(MLQ.isEmpty()){
+System.out.println("there is no processes");
+return ;
+}
+
 /* public void printReport() {
     System.out.println("Process Details:");
     for (PCB process : temp) {
@@ -157,12 +186,13 @@ private PCB findShortestJob(LinkedList<PCB> queue) {
 }*/ 
     
     // new printReport Code including fail Printing 
-public void printReport() {
+public  void printReport() {
     try {
         PrintWriter writer = new PrintWriter(new FileWriter("Report.txt"));
         
         writer.println("Process Details:");
-        for (PCB process : temp) {
+
+        for (PCB process : MLQ) {
             writer.println("Process ID: " + process.getPId());
             writer.println("Priority: " + process.getPriority());
             writer.println("Arrival Time: " + process.getArrivalTime());
@@ -235,5 +265,6 @@ public void calculateAverages() {
     }
 }
 
-    
+   
+}
 }
