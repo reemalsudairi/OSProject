@@ -1,14 +1,15 @@
 
 public class PCB { 
-	String PId;
-	int priority;
-	int ArrivalTime;
-	int CPU_burst;  
-	int StartTime;
-	int terminationTime;
-	int TurnArroundTime; 
-	int WaitingTime; 
-	int ResponseTime;
+	private String PId;
+	private int priority;
+	private int ArrivalTime;
+	private int CPU_burst;  
+	private int StartTime;
+	private int terminationTime;
+	private int TurnArroundTime; 
+	private int WaitingTime; 
+	private int ResponseTime;
+	private boolean check;
 	
 
 	 public PCB(String PId, int priority, int ArrivalTime, int CPU_burst) {
