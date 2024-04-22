@@ -91,12 +91,9 @@ public class MLQ {
     // Sort Q1 and Q2 based on arrival time
     Q1.sort(Comparator.comparingInt(PCB::getArrivalTime));
     Q2.sort(Comparator.comparingInt(PCB::getArrivalTime));
-    }
-   
 
+    int currentTime = 0; // Initialize current time
 
-public void SJF(){
-     int currentTime = 0; // Initialize current time
     // SJF scheduling for Q2
     while (!Q2.isEmpty()) {
         PCB shortestJob = findShortestJob(Q2);
@@ -119,6 +116,100 @@ public void SJF(){
 
         /// End od SJF 
         /// RR code should be here
+        private static void scheduleProcesses(List<PCB> q1, List<PCB> q2, List<PCB> completedProcesses) {
+        int currentTime = 0;
+
+        while (!q1.isEmpty() || !q2.isEmpty()) {
+            if (!q1.isEmpty()) {
+                PCB process = q1.get(0);
+                process.setStartTime(currentTime);
+                int remainingTime = process.getBurstTime();
+                if (remainingTime <= TIME_QUANTUM) {
+                    currentTime += remainingTime;
+                    process.setTerminationTime(currentTime);
+                    process.setTurnaroundTime(currentTime - process.getArrivalTime());
+                    process.setWaitingTime(process.getTurnaroundTime() - process.getBurstTime());
+                    process.setResponseTime(process.getStartTime() - process.getArrivalTime());
+                    completedProcesses.add(process);
+                    q1.remove(0);
+                } else {
+                    currentTime += TIME_QUANTUM;
+           process.setBurstTime(remainingTime - TIME_QUANTUM);
+                    q1.remove(0);
+                    q1.add(process);
+                }
+            } else {
+                if (!q2.isEmpty()) {
+                    q2.sort((p1, p2) -> p1.getBurstTime() - p2.getBurstTime());
+                    PCB process = q2.get(0);
+                    process.setStartTime(currentTime);
+                    currentTime += process.getBurstTime();
+                    process.setTerminationTime(currentTime);
+                    process.setTurnaroundTime(currentTime - process.getArrivalTime());
+                    process.setWaitingTime(process.getTurnaroundTime() - process.getBurstTime());
+                    process.setResponseTime(process.getStartTime() - process.getArrivalTime());
+                    completedProcesses.add(process);
+                    q2.remove(0);
+                }
+            }
+        }
+    }
+private static void displayReport(List<PCB> completedProcesses) {
+    System.out.println("Scheduling order of processes:");
+    for (PCB process : completedProcesses) {
+        System.out.println(process.getProcessID());
+    }
+    System.out.println();
+
+    System.out.println("---------------------------------------------------------------------------------------------------------------------");
+    System.out.println("|                              Process Details                                 |");
+    System.out.println("---------------------------------------------------------------------------------------------------------------------");
+
+    for (PCB process : completedProcesses) {
+        System.out.println("ProcessID: " + process.getProcessID());
+        System.out.println("Priority: " + process.getPriority());
+        System.out.println("ArrivalTime: " + process.getArrivalTime());
+        System.out.println("BurstTime: " + process.getBurstTime());
+        System.out.println("StartTime: " + process.getStartTime());
+        System.out.println("TerminationTime: " + process.getTerminationTime());
+        System.out.println("TurnaroundTime: " + process.getTurnaroundTime());
+        System.out.println("WaitingTime: " + process.getWaitingTime());
+        System.out.println("ResponseTime: " + process.getResponseTime());
+        System.out.println("---------------------------------------------------------------------------------------------------------------------");
+    }
+
+    double avgTurnaroundTime = completedProcesses.stream().mapToDouble(PCB::getTurnaroundTime).average().orElse(0);
+    double avgWaitingTime = completedProcesses.stream().mapToDouble(PCB::getWaitingTime).average().orElse(0);
+    double avgResponseTime = completedProcesses.stream().mapToDouble(PCB::getResponseTime).average().orElse(0);
+
+    System.out.println("---------------------------------------------------------------------------------------------------------------------");
+    System.out.printf("Average Turnaround Time: %.2f\n", avgTurnaroundTime);
+    System.out.printf("Average Waiting Time: %.2f\n", avgWaitingTime);
+    System.out.printf("Average Response Time: %.2f\n", avgResponseTime);
+    System.out.println("---------------------------------------------------------------------------------------------------------------------");
+}
+
+    private static void writeReportToFile(List<PCB> completedProcesses) {
+        try {
+            FileWriter writer = new FileWriter("Report.txt");
+            writer.write("ProcessID | Priority | ArrivalTime | BurstTime | StartTime | TerminationTime | TurnaroundTime | WaitingTime | ResponseTime\n");
+            for (PCB process : completedProcesses) {
+                writer.write(process.getProcessID() + " | " + process.getPriority() + " | " + process.getArrivalTime() + " | " +
+                        process.getBurstTime() + " | " + process.getStartTime() + " | " + process.getTerminationTime() + " | " +
+                        process.getTurnaroundTime() + " | " + process.getWaitingTime() + " | " + process.getResponseTime() + "\n");
+            }
+            double avgTurnaroundTime = completedProcesses.stream().mapToDouble(PCB::getTurnaroundTime).average().orElse(0);
+            double avgWaitingTime = completedProcesses.stream().mapToDouble(PCB::getWaitingTime).average().orElse(0);
+            double avgResponseTime = completedProcesses.stream().mapToDouble(PCB::getResponseTime).average().orElse(0);
+            writer.write("Average Turnaround Time: " + avgTurnaroundTime + "\n");
+            writer.write("Average Waiting Time: " + avgWaitingTime + "\n");
+            writer.write("Average Response Time: " + avgResponseTime + "\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
 }
 
 // Method to find the shortest job in the queue
