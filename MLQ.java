@@ -87,7 +87,7 @@ public class MLQ {
         }
     }
 
-    public void schedule() {
+    public void SJF() {
     // Sort Q1 and Q2 based on arrival time
     Q1.sort(Comparator.comparingInt(PCB::getArrivalTime)); /// should be in RR methode
     Q2.sort(Comparator.comparingInt(PCB::getArrivalTime));
