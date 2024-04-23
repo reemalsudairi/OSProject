@@ -10,6 +10,7 @@ public class MLQ {
     static LinkedList<PCB> Q2 = new LinkedList<PCB>();
     static LinkedList<PCB> MLQ = new LinkedList<PCB>();
      static LinkedList<PCB> temp = new LinkedList<PCB>(); //منب متأكدة وشو هذا 
+     public static final int TIME_QUANTUM = 3;
     double averageTAT,averageWT,averageRT;
     
     public static void main(String[] args){
