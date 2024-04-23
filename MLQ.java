@@ -89,7 +89,7 @@ public class MLQ {
 
     public void schedule() {
     // Sort Q1 and Q2 based on arrival time
-    Q1.sort(Comparator.comparingInt(PCB::getArrivalTime));
+    Q1.sort(Comparator.comparingInt(PCB::getArrivalTime)); /// should be in RR methode
     Q2.sort(Comparator.comparingInt(PCB::getArrivalTime));
 
     int currentTime = 0; // Initialize current time
@@ -125,7 +125,7 @@ public class MLQ {
                 PCB process = q1.get(0);
                 process.setStartTime(currentTime);
                 int remainingTime = process.getCPU_burst();
-                if (remainingTime <= TIME_QUANTUM) {
+                if (remainingTime <= TIME_QUANTUM) {/// there is erorrr 
                     currentTime += remainingTime;
                     process.setTerminationTime(currentTime);
                     process.setTurnArroundTime(currentTime - process.getArrivalTime());
