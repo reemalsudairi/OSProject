@@ -9,7 +9,6 @@ public class MLQ {
     static LinkedList<PCB> Q1 = new LinkedList<PCB>();
     static LinkedList<PCB> Q2 = new LinkedList<PCB>();
     static LinkedList<PCB> MLQ = new LinkedList<PCB>();
-     static LinkedList<PCB> temp = new LinkedList<PCB>(); //منب متأكدة وشو هذا 
      public static final int TIME_QUANTUM = 3;
     double averageTAT,averageWT,averageRT;
     
@@ -29,7 +28,7 @@ public class MLQ {
                     addProcess();//هنا وش قصدك MLQ   
                     break;
                 case "2":
-
+Print(); 
                 break;
                 case "3":
                     System.out.println("Good bye !");
@@ -88,14 +87,16 @@ public class MLQ {
         }
     }
 
-    public void SJF() {
+    public void shedule() {
     // Sort Q1 and Q2 based on arrival time
     Q1.sort(Comparator.comparingInt(PCB::getArrivalTime)); /// should be in RR methode
     Q2.sort(Comparator.comparingInt(PCB::getArrivalTime));
+    RR();
+    SFJ():
+   /// int currentTime = 0; // Initialize current time
 
-    int currentTime = 0; // Initialize current time
-
-    // SJF scheduling for Q2
+    }
+        public void SFJ (
     while (!Q2.isEmpty()) {
         PCB shortestJob = findShortestJob(Q2);
         shortestJob.setStartTime(currentTime);
@@ -116,8 +117,7 @@ public class MLQ {
     }
 }
 
-        /// End od SJF 
-        /// RR code should be here
+
         public void RR(List<PCB> q1, List<PCB> q2, List<PCB> completedProcesses) {
         int currentTime = 0;
 
@@ -133,7 +133,7 @@ public class MLQ {
                     process.setResponseTime(process.getStartTime() - process.getArrivalTime());
                     completedProcesses.add(process);
                     q1.remove(0);
-                } else {
+                } else { /// edit else 
                     currentTime += TIME_QUANTUM;
            process.setBurstTime(remainingTime - TIME_QUANTUM);
                     q1.remove(0);
@@ -145,6 +145,7 @@ public class MLQ {
             }
         }
     }
+
 
     private static void writeReportToFile(List<PCB> completedProcesses) {
         try {
@@ -213,7 +214,12 @@ return ;
 }
 }
 
-/* public void printReport() {
+public void print (){
+     printOutput();
+writeReportToFile();    
+}
+
+public void printOutput() {
     System.out.println("Process Details:");
     for (PCB process : temp) {
         System.out.println("Process ID: " + process.getPId());
@@ -227,11 +233,8 @@ return ;
         System.out.println("Response Time: " + process.getResponseTime());
         System.out.println("------------------"); 
     }
+}
 
-    calculateAverages();
-
-}*/ 
-    
     // new printReport Code including fail Printing 
 public void printReport() {
     try {
@@ -261,28 +264,6 @@ public void printReport() {
     }
 }
 
-
-/*public void calculateAverages() {
-    double totalTurnaroundTime = 0;
-    double totalWaitingTime = 0;
-    double totalResponseTime = 0;
-
-    for (PCB process : temp) {
-        totalTurnaroundTime += process.getTurnArroundTime();
-        totalWaitingTime += process.getWaitingTime();
-        totalResponseTime += process.getResponseTime();
-    }
-
-    double avgTurnaroundTime = totalTurnaroundTime / temp.size();
-    double avgWaitingTime = totalWaitingTime / temp.size();
-    double avgResponseTime = totalResponseTime / temp.size();
-
-    System.out.println("Average Turnaround Time: " + avgTurnaroundTime);
-    System.out.println("Average Waiting Time: " + avgWaitingTime);
-    System.out.println("Average Response Time: " + avgResponseTime);
-}*/ 
-    // new calculateAverages Code including fail Printing 
-
 public void calculateAverages() {
     double totalTurnaroundTime = 0;
     double totalWaitingTime = 0;
@@ -297,6 +278,10 @@ public void calculateAverages() {
     double avgTurnaroundTime = totalTurnaroundTime / temp.size();
     double avgWaitingTime = totalWaitingTime / temp.size();
     double avgResponseTime = totalResponseTime / temp.size();
+
+     System.out.println("Average Turnaround Time: " + avgTurnaroundTime);
+    System.out.println("Average Waiting Time: " + avgWaitingTime);
+    System.out.println("Average Response Time: " + avgResponseTime);
 
     try {
         PrintWriter writer = new PrintWriter(new FileWriter("Report.txt", true)); // Append to the file
