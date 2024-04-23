@@ -121,7 +121,6 @@ public class MLQ {
         public void RR(List<PCB> q1, List<PCB> q2, List<PCB> completedProcesses) {
         int currentTime = 0;
 
-        while (!q1.isEmpty() || !q2.isEmpty()) {
             if (!q1.isEmpty()) {
                 PCB process = q1.get(0);
                 process.setStartTime(currentTime);
@@ -140,18 +139,8 @@ public class MLQ {
                     q1.remove(0);
                     q1.add(process);
                 }
-            } else {
-                if (!q2.isEmpty()) {
-                    q2.sort((p1, p2) -> p1.getCPU_burst() - p2.getCPU_burst());
-                    PCB process = q2.get(0);
-                    process.setStartTime(currentTime);
-                    currentTime += process.getCPU_burst();
-                    process.setTerminationTime(currentTime);
-                    process.setTurnArroundTime(currentTime - process.getArrivalTime());
-                    process.setWaitingTime(process.getTurnArroundTime() - process.getCPU_burst());
-                    process.setResponseTime(process.getStartTime() - process.getArrivalTime());
-                    completedProcesses.add(process);
-                    q2.remove(0);
+            }
+               
                 }
             }
         }
