@@ -14,71 +14,74 @@ public class MLQ {
     
     public static void main(String[] args){
         Boolean x=true;
+        int choice;
         System.out.println("Welcome to our program !");
-        while (x) {
-        
-              System.out.println("1. Enter process' information.");
+        do{
+            System.out.println("1. Enter process' information.");
             System.out.println("2. Report detailed information about each process and different scheduling criteria.");
             System.out.println("3. Exit the program.");
             System.out.print("please Enter your choice: ");
-
-            String choice = input.nextLine();
+            choice = input.nextInt(); 
             switch (choice) {
-                case "1":
+                case 1:
                     addProcess();
                     shedule();
                     break;
-                case "2":
-             
+                case 2:
+                if(Q1.isEmpty()&& Q2.isEmpty() && MLQ.isEmpty()){
+                 System.out.println("there are no processes in the queue");
+                 break;}
                print(); 
                 break;
-                case "3":
+                case 3:
                     System.out.println("Good bye !");
-                    System.exit(0);
+                    
                     break;
                 default:
                     System.out.println("Invalid choice. Please enter 1, 2, or 3.");
-                    break;
-    }
-}
+                    break;}
+    
+        }while(choice != 3);
+   
     }
 
     public static void addProcess() {
         System.out.println("Enter the number of processes:");
         int numberOfProcesses = input.nextInt();
-
+        int priority ;
+        int arrivalTime ;
+        int cpuBurst ;
         for (int i = 0; i < numberOfProcesses; i++) {
-            System.out.println("Enter proiority for process " + (i + 1));
-            int priority = input.nextInt();
+            System.out.println("Process " + (i + 1)+" :" );
             do{ 
-                if(priority!=1||priority!=2){
-                    System.out.println("Invalid proiority time\nEnter proiorty for process" + (i + 1) );
-                    priority = input.nextInt(); }
-                else
-                    break;
-              }while(true);
+                System.out.println("Enter priority for process " + (i + 1)+" (enter 1 or 2)" );
+                   priority = input.nextInt(); 
+               if(priority!=1 && priority!=2){
+                System.out.println("Invalid proiority! please enter 1 or 2");
+               }
+              }while(priority!=1 && priority!=2);
 
-            System.out.println("Enter arrival time for process " + (i + 1));
-            int arrivalTime = input.nextInt();
+           
             do{ 
-                if(arrivalTime<0){
-                    System.out.println("Invalid arrival time\nEnter arrival time for process" + (i + 1) );
-                    arrivalTime = input.nextInt(); }
-                else
-                    break;
-              }while(true);
+                
+                    System.out.println("Enter arrival time for process" + (i + 1) +" (enter a value more than or equal to 0)" );
+                    arrivalTime = input.nextInt(); 
+                    if(arrivalTime<0){
+                        System.out.println("Invalid arrival time! please enter a value more than or equal to 0");
+                       }
+              }while(arrivalTime<0);
 
-            System.out.println("Enter CPU burst for process " + (i + 1));
-            int cpuBurst = input.nextInt();
+          
             do{ 
-                if(cpuBurst<0){
-                    System.out.println("Invalid CPU burst time\nEnter CPU burst for process" + (i + 1) );
-                    arrivalTime = input.nextInt(); }
-                else
-                    break;
-              }while(true);
+               
+                    System.out.println("Enter CPU burst for process" + (i + 1) +" (enter a value more than 0)" );
+                    cpuBurst = input.nextInt(); 
+                    if(cpuBurst<=0){
+                        System.out.println("Invalid CPU burst time! please enter a value more than 0");
+                       }
+              }while(cpuBurst<=0);
 
-            PCB pcb = new PCB("P" + (i + 1), priority, arrivalTime, cpuBurst);
+            PCB pcb = new PCB((i + 1), priority, arrivalTime, cpuBurst);
             
             if (priority == 1) {
                 Q1.add(pcb);
@@ -101,7 +104,7 @@ public class MLQ {
 
         public static void RR() {
         int currentTime = 0;
-
+        LinkedList<PCB> completedProcesses = new LinkedList<PCB>();
             if (!Q1.isEmpty()) {
                 PCB process = Q1.get(0);
                 process.setStartTime(currentTime);
@@ -187,7 +190,7 @@ temp=Q2.remove(0);
 MLQ.add(temp);
 }
 if(MLQ.isEmpty()){
-System.out.println("there is no processes");
+System.out.println("there are no processes");
 return ;
 }
 }

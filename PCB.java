@@ -12,7 +12,7 @@ public class PCB {
 	private boolean check;
 	
 
-	 public PCB(String PId, int priority, int ArrivalTime, int CPU_burst) {
+	 public PCB(int PId, int priority, int ArrivalTime, int CPU_burst) {
 		this.PId = "P"+PId;
 		this.priority = priority;
 		this.ArrivalTime = ArrivalTime;
