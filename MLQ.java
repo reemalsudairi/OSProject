@@ -6,9 +6,11 @@ import java.io.IOException;
 public class MLQ {
 
     static Scanner input = new Scanner(System.in);
-    static LinkedList<PCB> Q1 = new LinkedList<PCB>();
+    static ArrayList<PCB> Q1 = new ArrayList<PCB>();
     static LinkedList<PCB> Q2 = new LinkedList<PCB>();
-    static LinkedList<PCB> MLQ = new LinkedList<PCB>();
+    static ArrayList<PCB> MLQ = new ArrayList<PCB>();
+    //number of processes in MLQ
+    static int numberOfProcesses=0;
      public static final int TIME_QUANTUM = 3;
     double averageTAT,averageWT,averageRT;
     
@@ -47,11 +49,11 @@ public class MLQ {
 
     public static void addProcess() {
         System.out.println("Enter the number of processes:");
-        int numberOfProcesses = input.nextInt();
+        int noOfProcesses = input.nextInt();
         int priority ;
         int arrivalTime ;
         int cpuBurst ;
-        for (int i = 0; i < numberOfProcesses; i++) {
+        for (int i = 0; i < noOfProcesses; i++) {
             System.out.println("Process " + (i + 1)+" :" );
             do{ 
                 System.out.println("Enter priority for process " + (i + 1)+" (enter 1 or 2)" );
@@ -81,51 +83,21 @@ public class MLQ {
                        }
               }while(cpuBurst<=0);
 
-            PCB pcb = new PCB((i + 1), priority, arrivalTime, cpuBurst);
+            PCB pcb = new PCB((i + 1), priority, arrivalTime, cpuBurst,cpuBurst);
             
-            if (priority == 1) {
-                Q1.add(pcb);
-            } else if (priority == 2) {
-                Q2.add(pcb);
-            } 
+          MLQ.add(pcb); 
+          numberOfProcesses=numberOfProcesses+1;
         }
     }
 
     public static void shedule() {
-    // Sort Q1 and Q2 based on arrival time
-    Q1.sort(Comparator.comparingInt(PCB::getArrivalTime)); /// should be in RR methode
-    Q2.sort(Comparator.comparingInt(PCB::getArrivalTime));
-    RR();
-    SJF();
-    orderMLQ();
+    // Sort the MLQ based on arrival time and priority so that we can use it in  orderMLQ method
+    Collections.sort(MLQ, PCB.ORDER_BY_PRIORITY);
+    Collections.sort(MLQ, PCB.ORDER_BY_ARRIVALTIME);
    
     }
 
 
-        public static void RR() {
-        int currentTime = 0;
-        LinkedList<PCB> completedProcesses = new LinkedList<PCB>();
-            if (!Q1.isEmpty()) {
-                PCB process = Q1.get(0);
-                process.setStartTime(currentTime);
-                int remainingTime = process.getCPU_burst();
-                if (remainingTime <= TIME_QUANTUM) {/// there is erorrr 
-                    currentTime += remainingTime;
-                    process.setTerminationTime(currentTime);
-                    process.setTurnArroundTime(currentTime - process.getArrivalTime());
-                    process.setWaitingTime(process.getTurnArroundTime() - process.getCPU_burst());
-                    process.setResponseTime(process.getStartTime() - process.getArrivalTime());
-                    completedProcesses.add(process);
-                    Q1.remove(0);
-                } else { /// edit else 
-                    currentTime += TIME_QUANTUM;
-           process.setCPU_burst(remainingTime - TIME_QUANTUM);
-                    Q1.remove(0);
-                    Q1.add(process);
-                }
-            }
-               
-                }
        
    
         public static void SJF () {
@@ -144,7 +116,7 @@ public class MLQ {
                      shortestJob.setTurnArroundTime(shortestJob.getTerminationTime() - shortestJob.getArrivalTime());
                      shortestJob.setWaitingTime(shortestJob.getStartTime() - shortestJob.getArrivalTime());
                      // Add the processed job to temp list
-                     Q2.add(shortestJob);
+                     Q2.remove(shortestJob);
                  }
              }
          }
@@ -175,23 +147,72 @@ private static PCB findShortestJob(LinkedList<PCB> queue) {
 
 public static void  orderMLQ(){
  // MLQ arraylist already created 
-PCB temp ;
-while (!Q1.isEmpty() ) {
-    temp = Q1.remove(0);  
-    int tempBurst = temp.getCPU_burst();
-if(tempBurst>3){//check if this processes needs to enter the queue again
-Q1.add(temp); }
-tempBurst= tempBurst-3 ; //3 Quantm
-temp.setCPU_burst(tempBurst);
-MLQ.add(temp);
-}
-while (!Q2.isEmpty() ){
-temp=Q2.remove(0);
-MLQ.add(temp);
-}
-if(MLQ.isEmpty()){
-System.out.println("there are no processes");
-return ;
+ int currentTime = 0; 
+ boolean x=true;
+while(x){
+    for (int i = 0; i < numberOfProcesses; i++)
+    {
+        if (!MLQ.get(i).getprocess_terminated() && !MLQ.get(i).getprocessinQ() && MLQ.get(i).getArrivalTime() <= currentTime)
+        {
+            if (MLQ.get(i).getPriority() == 1)
+            {
+                Q1.add(MLQ.get(i));
+                MLQ.get(i).setprocessinQ(true);
+            }
+            else 
+            {
+                Q2.add(MLQ.get(i));
+                MLQ.get(i).setprocessinQ(true); 
+            }
+            
+        }
+    }
+    if (Q1.size() != 0)
+            {
+                for (int i = 0; i < Q1.size(); i++)
+                {
+                    if (Q1.get(i).getRemainingburstTime() > 0)
+                    {
+                        if (Q1.get(i).getRemainingburstTime() > TIME_QUANTUM)
+                        {Q1.get(i).setStartTime(currentTime);
+                            currentTime += TIME_QUANTUM;
+                           
+                            Q1.get(i).setRemainingburstTime((Q1.get(i).getRemainingburstTime())-TIME_QUANTUM); 
+                        }
+                        else
+                        {Q1.get(i).setStartTime(currentTime);
+                            currentTime += Q1.get(i).getRemainingburstTime();
+                            Q1.get(i).setTerminationTime(currentTime);
+                            Q1.get(i).setWaitingTime(currentTime - Q1.get(i).getCPU_burst() - Q1.get(i).getArrivalTime());
+                            Q1.get(i).setTurnArroundTime(Q1.get(i).getCPU_burst() + Q1.get(i).getWaitingTime()); 
+                            Q1.get(i).setRemainingburstTime(0);
+                            Q1.get(i).setprocess_terminated(true);
+                            Q1.get(i).setResponseTime(currentTime - Q1.get(i).getArrivalTime());
+                            Q1.remove(i);
+                            i--;
+                        }
+//for any new processes that have arrived while doing the previous steps
+                        for (int j = 0; j < numberOfProcesses; j++)
+                        {
+                            if (!MLQ.get(j).getprocess_terminated() && !MLQ.get(j).getprocessinQ() && MLQ.get(j).getArrivalTime() <= currentTime)
+                            {
+                                if (MLQ.get(j).getPriority() == 1)
+                                {
+                                    Q1.add(MLQ.get(j));
+                                    MLQ.get(j).setprocessinQ(true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else if (Q2.size() != 0)
+            {
+                SJF();
+            }
+            else if (Q1.isEmpty() && Q2.isEmpty() && MLQ.isEmpty()) 
+            x=false;
+            else currentTime++;      
 }
 }
 

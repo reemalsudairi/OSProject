@@ -1,3 +1,4 @@
+import java.util.Comparator;
 
 public class PCB { 
 	private String PId;
@@ -10,9 +11,11 @@ public class PCB {
 	private int WaitingTime; 
 	private int ResponseTime;
 	private boolean check;
-	
+	private int RemainingburstTime;
+	boolean process_terminated;
+    boolean processinQ;
 
-	 public PCB(int PId, int priority, int ArrivalTime, int CPU_burst) {
+	 public PCB(int PId, int priority, int ArrivalTime, int CPU_burst,int RemainingburstTime) {
 		this.PId = "P"+PId;
 		this.priority = priority;
 		this.ArrivalTime = ArrivalTime;
@@ -22,14 +25,37 @@ public class PCB {
 		TurnArroundTime = 0; 
 		WaitingTime = 0; 
 		ResponseTime = 0;
+		this.RemainingburstTime = RemainingburstTime; 
+		process_terminated = false;
+        processinQ = false;
 	}
+	public void setRemainingburstTime(int p) {
+		RemainingburstTime = p;
+	}	
 
+	 public int getRemainingburstTime() {
+		return RemainingburstTime;
+	}
 	public void setPId(String pId) {
 		PId = pId;
 	}	
 
 	 public String getPId() {
 		return PId;
+	}
+	public void setprocess_terminated(boolean p) {
+		process_terminated = p;
+	}	
+
+	 public boolean getprocess_terminated() {
+		return process_terminated;
+	}
+	public void setprocessinQ(boolean p) {
+		processinQ = p;
+	}	
+
+	 public boolean getprocessinQ() {
+		return processinQ;
 	}
 
 	public int getPriority() {
@@ -99,7 +125,30 @@ public class PCB {
 	public boolean isCheck() {
 		return check;
 	}
+	static final Comparator<PCB> ORDER_BY_ARRIVALTIME = new Comparator<PCB>()
+    {
+        public int compare(PCB a1, PCB a2)
+        {
+            double c = a1.ArrivalTime - a2.ArrivalTime;
+            if (c > 0) return 1;
+            else if (c < 0) return -1;
+            return 0;
+        }
+    };
+	static final Comparator<PCB> ORDER_BY_PRIORITY = new Comparator<PCB>()
+    {
+        public int compare(PCB a1, PCB a2)
+        {
+            double c = a1.priority - a2.priority;
+            if (c > 0) return 1;
+            else if (c < 0) return -1;
 
+            c = ORDER_BY_ARRIVALTIME.compare(a1, a2);
+            if (c > 0) return 1;
+            else if (c < 0) return -1;
+            return 0;
+        }
+    };
 
 
 	@Override
