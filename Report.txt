@@ -1,14 +1,64 @@
 Process Details:
 Process ID: P1
 Priority: 1
-Arrival Time: 1
-CPU Burst: 1
+Arrival Time: 0
+CPU Burst: 3
 Start Time: 0
-Termination Time: 0
-Turnaround Time: 0
+Termination Time: 3
+Turnaround Time: 3
 Waiting Time: 0
 Response Time: 0
 ------------------
-Average Turnaround Time: NaN
-Average Waiting Time: NaN
-Average Response Time: NaN
+Process ID: P2
+Priority: 1
+Arrival Time: 2
+CPU Burst: 5
+Start Time: 0
+Termination Time: 14
+Turnaround Time: 12
+Waiting Time: 7
+Response Time: -2
+------------------
+Process ID: P4
+Priority: 2
+Arrival Time: 3
+CPU Burst: 6
+Start Time: 22
+Termination Time: 28
+Turnaround Time: 25
+Waiting Time: 19
+Response Time: 19
+------------------
+Process ID: P5
+Priority: 1
+Arrival Time: 5
+CPU Burst: 6
+Start Time: 0
+Termination Time: 17
+Turnaround Time: 12
+Waiting Time: 6
+Response Time: -5
+------------------
+Process ID: P3
+Priority: 2
+Arrival Time: 5
+CPU Burst: 5
+Start Time: 17
+Termination Time: 22
+Turnaround Time: 17
+Waiting Time: 12
+Response Time: 12
+------------------
+Process ID: P6
+Priority: 1
+Arrival Time: 17
+CPU Burst: 3
+Start Time: 0
+Termination Time: 12
+Turnaround Time: -5
+Waiting Time: -8
+Response Time: -17
+------------------
+Average Turnaround Time: 10.666666666666666
+Average Waiting Time: 6.0
+Average Response Time: 1.1666666666666667

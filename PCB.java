@@ -150,7 +150,20 @@ public class PCB {
         }
     };
 
+	static final Comparator<PCB> ORDER_BY_BURSTTIME = new Comparator<PCB>()
+    {
+        public int compare(PCB a1, PCB a2)
+        {
+            double c = a1.CPU_burst - a2.CPU_burst;
+            if (c > 0) return 1;
+            else if (c < 0) return -1;
 
+            c = ORDER_BY_ARRIVALTIME.compare(a1, a2);
+            if (c > 0) return 1;
+            else if (c < 0) return -1;
+            return 0;
+        }
+    };
 	@Override
 	 public String toString() {
 		return "Process Id: "+PId+ " | Priority: " +priority+ " | CPU burst: "+CPU_burst+ " | Arrival time: "+ArrivalTime+ " | Start time: "+StartTime+ 
