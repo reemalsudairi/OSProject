@@ -1,323 +1,267 @@
-import java.util.*;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Scanner;
 
-public class MLQ {
+public class MLQScheduling {
+	
+   private String CPU_State; // IDLE, BUSY
+   private int Clock;
+   private PCB Current_Process;
+   private static Scanner scr = null;
+   private static PrintStream out = null;
+   private static MLQScheduling scheduling;
 
-    static Scanner input = new Scanner(System.in);
-    static ArrayList<PCB> Q1 = new ArrayList<PCB>();
-    static  ArrayList<PCB> Q2 = new  ArrayList<PCB>();
-    static ArrayList<PCB> MLQ = new ArrayList<PCB>();
-   
-    static int currentTime = 0; 
-    //number of processes in MLQ
-    static int numberOfProcesses=0;
-     public static final int TIME_QUANTUM = 3;
-    double averageTAT,averageWT,averageRT;
-    
-    public static void main(String[] args){
-       
-        int choice;
-        System.out.println("Welcome to our program !");
-        do{
-            System.out.println("1. Enter process' information.");
+   private ArrayList<PCB> Q1 = new ArrayList<PCB>();
+   private ArrayList<PCB> Q2 = new ArrayList<PCB>();
+   private ArrayList<String> MLQ = new ArrayList<String>();
+   private static ArrayList<PCB> PQ = new ArrayList<PCB>();
+
+   public static void main(String[] args) {
+      try {
+         scr = new Scanner(System.in);
+      	
+         out = new PrintStream("Report.txt");
+      
+         char choice;
+         do {
+         
+            System.out.println("1. Enter process information.");
             System.out.println("2. Report detailed information about each process and different scheduling criteria.");
             System.out.println("3. Exit the program.");
-            System.out.print("please Enter your choice: ");
-            choice = input.nextInt(); 
+            System.out.print("Please Enter your choice: ");
+         
+            choice = scr.next().charAt(0);
+         
             switch (choice) {
-                case 1:
-                    addProcess();
-                    shedule();
-                    orderMLQ();
-                    break;
-                case 2:
-                if(Q1.isEmpty()&& Q2.isEmpty() && MLQ.isEmpty()){
-                 System.out.println("there are no processes in the queue");
-                 break;}
-               print(); 
-                break;
-                case 3:
-                    System.out.println("Good bye !");
-                    
-                    break;
-                default:
-                    System.out.println("Invalid choice. Please enter 1, 2, or 3.");
-                    break;}
-    
-        }while(choice != 3);
-   
-    }
-
-    public static void addProcess() {
-        System.out.println("Enter the number of processes:");
-        int noOfProcesses = input.nextInt();
-        int priority ;
-        int arrivalTime ;
-        int cpuBurst ;
-        for (int i = 0; i < noOfProcesses; i++) {
-            System.out.println("Process " + (numberOfProcesses + 1)+" :" );
-            do{ 
-                System.out.println("Enter priority for process " + (numberOfProcesses + 1)+" (enter 1 or 2)" );
-                   priority = input.nextInt(); 
-               if(priority!=1 && priority!=2){
-                System.out.println("Invalid proiority! please enter 1 or 2");
-               }
-              }while(priority!=1 && priority!=2);
-
-            do{ 
-                
-                    System.out.println("Enter arrival time for process" + (numberOfProcesses + 1) +" (enter a value more than or equal to 0)" );
-                    arrivalTime = input.nextInt(); 
-                    if(arrivalTime<0){
-                        System.out.println("Invalid arrival time! please enter a value more than or equal to 0");
-                       }
-              }while(arrivalTime<0);
-             
-            do{ 
-               
-                    System.out.println("Enter CPU burst for process" + (numberOfProcesses + 1) +" (enter a value more than 0)" );
-                    cpuBurst = input.nextInt(); 
-                    if(cpuBurst<=0){
-                        System.out.println("Invalid CPU burst time! please enter a value more than 0");
-                       }
-              }while(cpuBurst<=0);
-             
-            PCB pcb = new PCB((numberOfProcesses + 1), priority, arrivalTime, cpuBurst,cpuBurst);
-            
-          MLQ.add(pcb); 
-          numberOfProcesses=numberOfProcesses+1;
-        }
-        printOutput();
-    }
-
-    public static void shedule() {
-    // Sort the MLQ based on arrival time and priority so that we can use it in  orderMLQ method
-    Collections.sort(MLQ, PCB.ORDER_BY_PRIORITY);
-    Collections.sort(MLQ, PCB.ORDER_BY_ARRIVALTIME);
-   
-   
-    }
-
-
-       
-   
-       
-        
-// Method to find the shortest job in the queue
-private static PCB findShortestJob(LinkedList<PCB> queue) {
-    PCB shortestJob = queue.getFirst();
-    for (PCB job : queue) {
-        // Case 1: If the current process has a shorter burst time than the shortest job
-        if (job.getCPU_burst() < shortestJob.getCPU_burst()) {
-            shortestJob = job;
-        }
-        // Case 2: If two processes have the same burst time, compare their arrival times
-        else if (job.getCPU_burst() == shortestJob.getCPU_burst()) {
-            if (job.getArrivalTime() < shortestJob.getArrivalTime()) {
-                shortestJob = job;
+               case '1':
+                  setupPCB();
+                  break;
+               case '2':
+                  MLQReport();
+                  break;
+               case '3':
+                  break;
+               default:
+                  System.out.println("Invalid choice. Please enter 1, 2, or 3.");
             }
-            // Case 3: If two processes have the same burst time and arrival time, compare their process IDs
-            else if (job.getArrivalTime() == shortestJob.getArrivalTime() && job.getPId().compareTo(shortestJob.getPId()) < 0) {
-                shortestJob = job;
-            }
-        }
-    }
-    queue.remove(shortestJob); // Remove the shortest job from the queue
-    return shortestJob;
-}
-
-
-public static void orderMLQ() {
-    System.out.println("entered MLQ method ");
-    boolean x=true;
-    currentTime=MLQ.get(0).getArrivalTime();
-    for (int i = 0; i < MLQ.size(); i++) {
-        System.out.println("entered the first for loop enetering in q1 or q2 ");
-        System.out.println(MLQ.get(i).toString());
-        
-            System.out.println("entered the if statment in the first for loop for entering the Q1 and Q2 ");
-            if (MLQ.get(i).getPriority() == 1) {
-                System.out.println("entered the is statment for the priority 1 ");
-                Q1.add(MLQ.get(i));
-                MLQ.get(i).setprocessinQ(true);
-                MLQ.get(i).setStartTime(currentTime);
-            } else {
-                System.out.println("entered the else statment for the priority 2");
-                Q2.add(MLQ.get(i));
-                MLQ.get(i).setprocessinQ(true);
-              
-            }
-        
-    }while (x) {
-        System.out.println("entered the isempty while loop ");
-        
+         
+            System.out.println();
+         
+         } while (choice != '3');
       
-        if (Q1.size() != 0) {
-            System.out.println("entered the first if statment for priority 1 ");
-            for (int i = 0; i < Q1.size(); i++) {
-                System.out.println("entered the second for loop for shifting through q1 ");
-               
-                if (Q1.get(i).getRemainingburstTime() > 0) {
+      } catch (FileNotFoundException e) {
+         e.printStackTrace();
+      }
+   
+      if (scr != null)
+         scr.close();
+   
+      if (out != null)
+         out.close();
+   }
 
-                    if (Q1.get(i).getRemainingburstTime() > TIME_QUANTUM) {
-                        System.out.println("entered if statment when the remaining time is more than the quantum time ");
-                        currentTime += TIME_QUANTUM;
-                        Q1.get(i).setRemainingburstTime(Q1.get(i).getRemainingburstTime() - TIME_QUANTUM);
-                    } else {
-                        System.out.println("entered the if statment when the remaning time is less than or equal to the quantum time  ");
-                        currentTime += Q1.get(i).getRemainingburstTime();
-                        System.out.println(currentTime);
-                        Q1.get(i).setTerminationTime(currentTime);
-                        Q1.get(i).setTurnArroundTime(Q1.get(i).getTerminationTime() - Q1.get(i).getArrivalTime());
-                        Q1.get(i).setWaitingTime( Q1.get(i).getTurnArroundTime()- Q1.get(i).getCPU_burst());
-                       
-                        Q1.get(i).setRemainingburstTime(0);
-                        Q1.get(i).setprocess_terminated(true);
-                        Q1.get(i).setResponseTime(Q1.get(i).getStartTime()-Q1.get(i).getArrivalTime());
-                        Q1.remove(i); // Corrected removal
-                        i--;
-                    }
-                    // For any new processes that have arrived while doing the previous steps
-                    for (int j = 0; j < numberOfProcesses; j++) {
-                        System.out.println("entered the for loop to check if there are new processes that entered while doing the previous steps ");
-                        if (!MLQ.get(j).getprocess_terminated() && !MLQ.get(j).getprocessinQ() && MLQ.get(j).getArrivalTime() <= currentTime) {
-                           
-                            if (MLQ.get(j).getPriority() == 1) {
-                                Q1.add(MLQ.get(j));
-                                MLQ.get(j).setprocessinQ(true);
-                            }
-                        }
-                    }
-                }
+   private static void setupPCB() {
+   	
+      PQ = new ArrayList<PCB>();
+   
+      System.out.print("Enter the number of processes:");
+      int num = scr.nextInt();
+      for (int i = 1; i <= num; i++) {
+         System.out.println("Process P" + i + ":");
+      
+         System.out.print(" Enter Process Priority : ");
+         int priority = scr.nextInt();
+         while (priority < 1 || priority > 2) {
+            System.out.println("priority must be in range [1 - 2]");
+            System.out.print("Priority : ");
+            priority = scr.nextInt();
+         }
+      
+         System.out.print(" Enter Arrival Time: ");
+         int arrivalTime = scr.nextInt();
+      
+         System.out.print(" Enter CPU burst: ");
+         int burstTime = scr.nextInt();
+      
+         PCB pcb = new PCB(i, arrivalTime, burstTime, priority);
+         PQ.add(pcb);
+      }
+   }
+
+   public static void MLQReport() {
+      startScheduling();
+      printReport(System.out);
+      printReport(out);
+   }
+
+   public static void startScheduling() {
+      for (PCB p : PQ) {
+         p.setStartTime(0);
+         p.setTerminateTime(0);
+         p.setWaitTime(0);
+         p.setTimeInCPU(0);
+      }
+   
+      scheduling = new MLQScheduling(PQ);
+      scheduling.excute();
+   }
+
+   public static void printReport(PrintStream out) {
+      for (PCB p : PQ) {
+         out.println(p);
+         out.println("---------------");
+      }
+      out.println("Process order chart: " + scheduling.getChartString());
+      out.println("---------------");
+   	
+      int size = PQ.size();
+      double totalTurnAround = 0;
+      double totalWait = 0;
+      double totalResponse = 0;
+   
+      for (PCB p : PQ) {
+         totalWait += p.getWaitTime();
+         totalTurnAround += p.getTurnAroundTime();
+         totalResponse += p.getResponseTime();
+      }
+   
+      out.println("Average turnaround time : " + totalTurnAround / size);
+      out.println("Average waiting time    : " + totalWait / size);
+      out.println("Average response time   : " + totalResponse / size);
+   
+      out.println("---------------");
+   }
+
+   public MLQScheduling(ArrayList<PCB> PQ) {
+      Q1 = new ArrayList<PCB>();
+      Q2 = new ArrayList<PCB>();
+   	
+      for (int i = 0; i < PQ.size(); i++) {
+         PCB p = PQ.get(i);
+         if (p.getPriority() == 1) {
+            int j = 0;
+            for (j = 0; j < Q1.size(); j++) {
+               if (p.getArrivalTime() < Q1.get(j).getArrivalTime())
+                  break;
             }
-        } else if (Q2.size() != 0) {
-            System.out.println("entered the if statment for q2 and checking if it is not empty ");
-            Collections.sort(Q2, PCB.ORDER_BY_BURSTTIME);
-                Q2.get(0).setStartTime(currentTime);
-                currentTime += Q2.get(0).getCPU_burst();
-                Q2.get(0).setResponseTime(Q2.get(0).getStartTime()-Q2.get(0).getArrivalTime());
-                Q2.get(0).setTerminationTime(currentTime);
-                Q2.get(0).setTurnArroundTime(Q2.get(0).getTerminationTime() - Q2.get(0).getArrivalTime()) ;
-                Q2.get(0).setWaitingTime(Q2.get(0).getTurnArroundTime() - Q2.get(0).getCPU_burst()) ;
-                Q2.get(0).setprocess_terminated(true) ;
-                Q2.get(0).setRemainingburstTime(0);
-                Q2.remove(0);
-           
-        } else if(Q1.isEmpty() && Q2.isEmpty()){
-            System.out.println("the if statment when both lists are empty");
-            x=false;
-        }
-         else{
-            System.out.println("entered else statment when we increment the current time ");
-            currentTime++;}
-    }
-}
+            Q1.add(j, p);
+         } else {
+            int j = 0;
+            for (j = 0; j < Q2.size(); j++) {
+               if (p.getBurstTime() < Q2.get(j).getBurstTime())
+                  break;
+            }
+            Q2.add(j, p);
+         }			
+      }
+   }
 
+   private PCB getNextProcess(int time) {
+      for (int i = 0; i < Q1.size(); i++) {
+         if (Q1.get(i).getArrivalTime() <= time) {
+            return Q1.remove(i);
+         }
+      }
+   
+      for (int i = 0; i < Q2.size(); i++) {
+         if (Q2.get(i).getArrivalTime() <= time) {
+            return Q2.remove(i);
+         }
+      }
+      return null;
+   }
 
-public static void print (){
-	writeReportToFile();
-     printOutput();
-     printReport();    
-}
+   public void excute() {
+      Clock = 0;
+      CPU_State = "IDLE";
+      int quantum = 3;
+      int qCounter = 0;
+   
+      while (!Q1.isEmpty() || !Q2.isEmpty() || CPU_State.equals("BUSY")) {
+         if (CPU_State.equals("IDLE")) {
+            PCB next = getNextProcess(Clock);
+            if (next != null) {
+               runPCB(next);
+               qCounter = 0;
+            }
+         } else if (Current_Process != null && Current_Process.getPriority() == 1 && !Q1.isEmpty()) {
+            if (qCounter == quantum) {
+               Q1.add(Current_Process);
+            	
+               PCB next = getNextProcess(Clock);
+               if (next != null) {
+                  runPCB(next);
+                  qCounter = 0;
+               }
+            }
+         } else if (Current_Process != null && Current_Process.getPriority() == 2 && !Q1.isEmpty()) {
+         	
+            if (Q1.get(0).getArrivalTime() <= Clock) {
+            	//Q2.add(Current_Process);
+            	
+            	// Sort queue by burst time
+               int j = 0;
+               for (j = 0; j < Q2.size(); j++) {
+                  if (Current_Process.getBurstTime() < Q2.get(j).getBurstTime())
+                     break;
+               }
+               Q2.add(j, Current_Process);
+            	
+               PCB next = getNextProcess(Clock);
+               if (next != null) {
+                  runPCB(next);
+                  qCounter = 0;
+               }
+            }
+         }
+      
+         Clock++;
+      
+         if (CPU_State.equals("BUSY") && Current_Process != null) {
+            Current_Process.setTimeInCPU(Current_Process.getTimeInCPU() + 1);
+            qCounter++;
+            if (Current_Process.getTimeInCPU() == Current_Process.getBurstTime()) {
+               terminatePCB(Current_Process);
+            }
+         }
+      }
+   }
 
-public static void printOutput() {
-    System.out.println("Process Details:");
-    for (PCB process : MLQ ) {
-        System.out.println("Process ID: " + process.getPId());
-        System.out.println("Priority: " + process.getPriority());
-        System.out.println("Arrival Time: " + process.getArrivalTime());
-        System.out.println("CPU Burst: " + process.getCPU_burst());
-        System.out.println("Start Time: " + process.getStartTime());
-        System.out.println("Termination Time: " + process.getTerminationTime());
-        System.out.println("Turnaround Time: " + process.getTurnArroundTime());
-        System.out.println("Waiting Time: " + process.getWaitingTime());
-        System.out.println("Response Time: " + process.getResponseTime());
-        System.out.println("------------------"); 
-    }
-}
+   private void runPCB(PCB p) {
+      if (p.getTimeInCPU() == 0)
+         p.setStartTime(this.Clock);
+   
+      MLQ.add("P" + p.getId());
+   	
+      CPU_State = "BUSY";
+      Current_Process = p;
+   }
 
+   private void terminatePCB(PCB p) {
+      p.setTerminateTime(Clock);
+      p.setWaitTime(p.getTerminateTime() - p.getArrivalTime() - p.getBurstTime());
+      p.setResponseTime(p.getStartTime() - p.getArrivalTime());
+      p.setTurnAroundTime(p.getTerminateTime() - p.getArrivalTime());
+   	
+      CPU_State = "IDLE";
+      Current_Process = null;
+   }
 
-private static void writeReportToFile() {
-    try {
-        FileWriter writer = new FileWriter("Report.txt");
-        writer.write("ProcessID | Priority | ArrivalTime | BurstTime | StartTime | TerminationTime | TurnaroundTime | WaitingTime | ResponseTime\n");
-        for (PCB process : MLQ) {
-            writer.write(process.getPId() + " | " + process.getPriority() + " | " + process.getArrivalTime() + " | " +
-                    process.getCPU_burst() + " | " + process.getStartTime() + " | " + process.getTerminationTime() + " | " +
-                    process.getTurnArroundTime() + " | " + process.getWaitingTime() + " | " + process.getResponseTime() + "\n");
-        }
-        double avgTurnaroundTime = MLQ.stream().mapToDouble(PCB::getTerminationTime).average().orElse(0);
-        double avgWaitingTime = MLQ.stream().mapToDouble(PCB::getWaitingTime).average().orElse(0);
-        double avgResponseTime = MLQ.stream().mapToDouble(PCB::getResponseTime).average().orElse(0);
-        writer.write("Average Turnaround Time: " + avgTurnaroundTime + "\n");
-        writer.write("Average Waiting Time: " + avgWaitingTime + "\n");
-        writer.write("Average Response Time: " + avgResponseTime + "\n");
-        writer.close();
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
-    // new printReport Code including fail Printing 
-public static void printReport() {
-    try {
-        PrintWriter writer = new PrintWriter(new FileWriter("Report.txt"));
-        
-        writer.println("Process Details:");
+   public String getChartString() {
+      String chart = "[";
+   	
+      for (String p : MLQ) {
+         chart += " " + p + " |";
+      }
+   
+      if (chart.length() > 1)
+         chart = chart.substring(0, chart.length() - 1);
+   	
+      chart += "]";
+   	
+      return chart;
+   }
 
-        for (PCB process : MLQ) {
-            writer.println("Process ID: " + process.getPId());
-            writer.println("Priority: " + process.getPriority());
-            writer.println("Arrival Time: " + process.getArrivalTime());
-            writer.println("CPU Burst: " + process.getCPU_burst());
-            writer.println("Start Time: " + process.getStartTime());
-            writer.println("Termination Time: " + process.getTerminationTime());
-            writer.println("Turnaround Time: " + process.getTurnArroundTime());
-            writer.println("Waiting Time: " + process.getWaitingTime());
-            writer.println("Response Time: " + process.getResponseTime());
-            writer.println("------------------"); 
-        }
-
-        // Close the writer to ensure all data is flushed and the file is properly closed
-        writer.close();
-
-        calculateAverages();
-    } catch (IOException e) {
-        System.err.println("Error writing to file: " + e.getMessage());
-    }
-}
-
-public static void calculateAverages() {
-    double totalTurnaroundTime = 0;
-    double totalWaitingTime = 0;
-    double totalResponseTime = 0;
-
-    for (PCB process : MLQ ) {
-        totalTurnaroundTime += process.getTurnArroundTime();
-        totalWaitingTime += process.getWaitingTime();
-        totalResponseTime += process.getResponseTime();
-    }
-
-    double avgTurnaroundTime = totalTurnaroundTime /  MLQ.size();
-    double avgWaitingTime = totalWaitingTime /  MLQ.size();
-    double avgResponseTime = totalResponseTime /  MLQ.size();
-
-     System.out.println("Average Turnaround Time: " + avgTurnaroundTime);
-    System.out.println("Average Waiting Time: " + avgWaitingTime);
-    System.out.println("Average Response Time: " + avgResponseTime);
-
-    try {
-        PrintWriter writer = new PrintWriter(new FileWriter("Report.txt", true)); // Append to the file
-
-        writer.println("Average Turnaround Time: " + avgTurnaroundTime);
-        writer.println("Average Waiting Time: " + avgWaitingTime);
-        writer.println("Average Response Time: " + avgResponseTime);
-
-        // Close the writer to ensure all data is flushed and the file is properly closed
-        writer.close();
-    } catch (IOException e) {
-        System.err.println("Error writing to file: " + e.getMessage());
-    }
-}
 }
